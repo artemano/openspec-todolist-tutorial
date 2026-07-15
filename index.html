@@ -1,4 +1,3 @@
-re
 <!DOCTYPE html>
 <html lang="es">
 
@@ -744,22 +743,11 @@ irm https://claude.ai/install.ps1 | iex</pre>
         <!-- PASO: Repo base -->
         <article class="step" data-grupo="Inicio" data-titulo="El repo base"
           data-print-titulo="El repo base: qué trae y por qué">
-          <p>Todo parte de un repositorio ya preparado (<code>openspec-todolist-base</code>) que se entrega. La idea es
-            que descargue primero el repo base de GitHub de <a href="https://github.com/artemano/openspec-todolist-base"
-              target="_blank">aquí</a>.</p>
+          <p>Todo parte de un repositorio ya preparado (<code>openspec-todolist-base</code>) que se entrega al
+            estudiante. La idea: que el primer <code>bun dev</code> funcione a la primera y que el estudiante solo
+            agregue funcionalidad vía OpenSpec.</p>
 
-          <h3>La constitución del proyecto: openspec/project.md</h3>
-          <p>Este archivo ya viene escrito en el repo base y es el más importante: OpenSpec lo inyecta en <em>todo</em>
-            lo que la IA genera, para que nunca "olvide" el stack. Contiene reglas como:</p>
-          <ul>
-            <li>Frontend: React + Vite, componentes simples, sin librerías de UI externas.</li>
-            <li>Backend: Bun con <code>bun:sqlite</code>. Un solo archivo de base de datos:
-              <code>server/db.sqlite</code>.</li>
-            <li>API: endpoints REST en JSON bajo <code>/api/*</code>.</li>
-            <li>Todo texto visible al usuario, en español.</li>
-          </ul>
-
-          <pre class="bloque-codigo">openspec-todolist-base>
+          <pre class="bloque-codigo">openspec-todolist-base/
 ├── <span class="k">app/</span>                  <span class="c"># Frontend React (Vite). Arranca con una pantalla vacía "TodoList".</span>
 ├── <span class="k">server/</span>               <span class="c"># API en Bun + bun:sqlite. Un endpoint /health de ejemplo.</span>
 │   └── db.sqlite         <span class="c"># Base de datos local. Un archivo, cero configuración.</span>
@@ -775,8 +763,19 @@ irm https://claude.ai/install.ps1 | iex</pre>
 │   └── changes/          <span class="c"># Aquí aparecerán las propuestas del estudiante.</span>
 └── package.json</pre>
 
+          <h3>La constitución del proyecto: openspec/project.md</h3>
+          <p>Este archivo ya viene escrito en el repo base y es el más importante: OpenSpec lo inyecta en <em>todo</em>
+            lo que la IA genera, para que nunca "olvide" el stack. Contiene reglas como:</p>
+          <ul>
+            <li>Frontend: React + Vite, componentes simples, sin librerías de UI externas.</li>
+            <li>Backend: Bun con <code>bun:sqlite</code>. Un solo archivo de base de datos:
+              <code>server/db.sqlite</code>.</li>
+            <li>API: endpoints REST en JSON bajo <code>/api/*</code>.</li>
+            <li>Todo texto visible al usuario, en español.</li>
+          </ul>
+
           <h3>Puesta en marcha</h3>
-          <pre class="bloque-codigo">git clone https://github.com/artemano/openspec-todolist-base openspec-todolist
+          <pre class="bloque-codigo">git clone &lt;url-del-repo&gt; openspec-todolist
 cd openspec-todolist
 bun install
 bun dev        <span class="c"># abre http://localhost:5173 → pantalla base "TodoList"</span></pre>
@@ -1102,15 +1101,6 @@ qué se ve en pantalla, y qué pasa al eliminar una persona.]</pre>
           </ul>
           <p>Criterio de éxito: que otra persona pueda entender tu cambio leyendo solo la carpeta archivada, sin mirar
             el código.</p>
-
-          <figure class="gif">
-            <video src="assets/video-09-specs-finales.mp4" title="Recorrido por las specs finales" autoplay muted loop
-              playsinline controls preload="metadata"
-              onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
-            <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo — disponible
-              próximamente</div>
-            <figcaption>El resultado final: la app terminada junto a su plano, lado a lado.</figcaption>
-          </figure>
 
           <div class="regla">Lo que no está en la spec, <span>no existe.</span></div>
         </article>
