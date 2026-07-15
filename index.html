@@ -747,8 +747,6 @@ irm https://claude.ai/install.ps1 | iex</pre>
           <p>Todo parte de un repositorio ya preparado (<code>openspec-todolist-base</code>) que se entrega. La idea es
             que descargue primero el repo base de GitHub de <a href="https://github.com/artemano/openspec-todolist-base"
               target="_blank">aquí</a>.</p>
-          <p>Para ello realize desde la terminal:</p>
-          <pre class="bloque-codigo">git clone https://github.com/artemano/openspec-todolist-base.git</pre>
 
           <h3>La constitución del proyecto: openspec/project.md</h3>
           <p>Este archivo ya viene escrito en el repo base y es el más importante: OpenSpec lo inyecta en <em>todo</em>
@@ -760,7 +758,7 @@ irm https://claude.ai/install.ps1 | iex</pre>
             <li>API: endpoints REST en JSON bajo <code>/api/*</code>.</li>
             <li>Todo texto visible al usuario, en español.</li>
           </ul>
-          
+
           <pre class="bloque-codigo">openspec-todolist-base>
 ├── <span class="k">app/</span>                  <span class="c"># Frontend React (Vite). Arranca con una pantalla vacía "TodoList".</span>
 ├── <span class="k">server/</span>               <span class="c"># API en Bun + bun:sqlite. Un endpoint /health de ejemplo.</span>
@@ -778,7 +776,7 @@ irm https://claude.ai/install.ps1 | iex</pre>
 └── package.json</pre>
 
           <h3>Puesta en marcha</h3>
-          <pre class="bloque-codigo">git clone &lt;url-del-repo&gt; openspec-todolist
+          <pre class="bloque-codigo">git clone https://github.com/artemano/openspec-todolist-base openspec-todolist
 cd openspec-todolist
 bun install
 bun dev        <span class="c"># abre http://localhost:5173 → pantalla base "TodoList"</span></pre>
