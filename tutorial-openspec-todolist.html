@@ -1,1231 +1,685 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenSpec paso a paso — Construyendo un TodoList</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
-        rel="stylesheet">
-    <style>
-        :root {
-            --papel: #FBFAF6;
-            --tinta: #14263B;
-            --azul-plano: #1D4E89;
-            --azul-suave: #E8EEF6;
-            --sello: #B23A2F;
-            --linea: #C9D3E0;
-            --verde: #2E7D4F;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box
-        }
-
-        html {
-            font-size: 16px
-        }
-
-        body {
-            font-family: 'IBM Plex Sans', sans-serif;
-            background: var(--azul-suave);
-            color: var(--tinta);
-            line-height: 1.55;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        .app {
-            max-width: 1180px;
-            margin: 24px auto;
-            background: var(--papel);
-            border: 1.5px solid var(--tinta);
-            display: grid;
-            grid-template-columns: 290px 1fr;
-            min-height: calc(100vh - 48px);
-        }
-
-        /* ---------- SIDEBAR ---------- */
-        aside {
-            border-right: 1.5px solid var(--tinta);
-            background: #F3F7FC;
-            display: flex;
-            flex-direction: column;
-        }
-
-        aside .marca {
-            padding: 20px 20px 16px;
-            border-bottom: 1.5px solid var(--tinta);
-            background: var(--papel);
-        }
-
-        aside .marca .eyebrow {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: .62rem;
-            letter-spacing: .18em;
-            text-transform: uppercase;
-            color: var(--azul-plano);
-            margin-bottom: 6px;
-        }
-
-        aside .marca h1 {
-            font-family: 'Archivo', sans-serif;
-            font-weight: 800;
-            font-size: 1.15rem;
-            line-height: 1.2;
-            letter-spacing: -.01em;
-        }
-
-        aside .marca h1 span {
-            color: var(--azul-plano)
-        }
-
-        aside .marca .progreso {
-            margin-top: 12px;
-            height: 6px;
-            background: var(--linea);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        aside .marca .progreso i {
-            display: block;
-            height: 100%;
-            width: 0;
-            background: var(--azul-plano);
-            transition: width .3s
-        }
-
-        aside .marca .progreso-label {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: .62rem;
-            color: #5A6B80;
-            margin-top: 5px;
-            display: block;
-        }
-
-        aside nav {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px 0 20px
-        }
-
-        .grupo {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: .58rem;
-            letter-spacing: .16em;
-            text-transform: uppercase;
-            color: #7086A0;
-            padding: 14px 20px 6px;
-        }
-
-        .paso-link {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-            text-align: left;
-            padding: 8px 20px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-family: 'IBM Plex Sans', sans-serif;
-            font-size: .84rem;
-            color: var(--tinta);
-            border-left: 3px solid transparent;
-        }
-
-        .paso-link:hover {
-            background: #E7EFF9
-        }
-
-        .paso-link .dot {
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
-            border: 1.5px solid var(--azul-plano);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: .58rem;
-            color: var(--azul-plano);
-            background: var(--papel);
-        }
-
-        .paso-link.activo {
-            background: var(--papel);
-            border-left-color: var(--sello);
-            font-weight: 600;
-        }
-
-        .paso-link.visto .dot {
-            background: var(--verde);
-            border-color: var(--verde);
-            color: #fff
-        }
-
-        .paso-link.activo .dot {
-            background: var(--azul-plano);
-            color: #fff
-        }
-
-        /* ---------- CONTENIDO ---------- */
-        main {
-            display: flex;
-            flex-direction: column;
-            min-width: 0
-        }
-
-        .barra-superior {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            gap: 12px;
-            padding: 16px 32px;
-            border-bottom: 1.5px solid var(--tinta);
-            background: var(--papel);
-        }
-
-        .barra-superior .titulo-paso {
-            font-family: 'Archivo', sans-serif;
-            font-weight: 700;
-            font-size: 1.2rem;
-        }
-
-        .barra-superior .contador {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: .68rem;
-            color: var(--azul-plano);
-            letter-spacing: .12em;
-            white-space: nowrap;
-        }
-
-        .contenido {
-            flex: 1;
-            overflow-y: auto
-        }
-
-        article.step {
-            display: none;
-            padding: 26px 32px 32px
-        }
-
-        article.step.activo {
-            display: block
-        }
-
-        h3 {
-            font-family: 'Archivo', sans-serif;
-            font-weight: 700;
-            font-size: .95rem;
-            margin: 20px 0 8px;
-            color: var(--azul-plano);
-        }
-
-        article.step>h3:first-child {
-            margin-top: 0
-        }
-
-        p {
-            font-size: .92rem;
-            margin-bottom: 8px
-        }
-
-        ul,
-        ol {
-            font-size: .92rem;
-            margin: 6px 0 10px 22px
-        }
-
-        li {
-            margin-bottom: 5px
-        }
-
-        code {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: .82em;
-            background: var(--azul-suave);
-            border: 1px solid var(--linea);
-            padding: 1px 6px;
-            border-radius: 3px;
-        }
-
-        .bloque-codigo {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: .8rem;
-            background: var(--tinta);
-            color: #DCE7F5;
-            padding: 14px 18px;
-            margin: 10px 0;
-            border-radius: 4px;
-            overflow-x: auto;
-            line-height: 1.6;
-            white-space: pre-wrap;
-        }
-
-        .bloque-codigo .c {
-            color: #7E96B3
-        }
-
-        .bloque-codigo .k {
-            color: #8FD3A8
-        }
-
-        .prompt {
-            border: 1.5px solid var(--azul-plano);
-            background: #F3F7FC;
-            margin: 12px 0;
-            border-radius: 4px;
-            overflow: hidden
-        }
-
-        .prompt .prompt-head {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: .65rem;
-            letter-spacing: .15em;
-            text-transform: uppercase;
-            color: #fff;
-            background: var(--azul-plano);
-            padding: 5px 14px;
-        }
-
-        .prompt .prompt-body {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: .82rem;
-            padding: 12px 16px;
-            white-space: pre-wrap;
-            line-height: 1.6;
-        }
-
-        .checkpoint {
-            border-left: 3px solid var(--verde);
-            background: #F0F7F2;
-            padding: 10px 14px;
-            margin: 12px 0;
-            font-size: .85rem
-        }
-
-        .checkpoint b {
-            color: var(--verde)
-        }
-
-        .alerta {
-            border-left: 3px solid var(--sello);
-            background: #FBF1EF;
-            padding: 10px 14px;
-            margin: 12px 0;
-            font-size: .85rem
-        }
-
-        .alerta b {
-            color: var(--sello)
-        }
-
-        figure.gif {
-            margin: 16px 0;
-            border: 1.5px dashed var(--azul-plano);
-            border-radius: 4px;
-            overflow: hidden;
-            background:
-                linear-gradient(var(--linea) 1px, transparent 1px),
-                linear-gradient(90deg, var(--linea) 1px, transparent 1px);
-            background-size: 22px 22px;
-            background-color: #F3F7FC;
-        }
-
-        figure.gif video {
-            width: 100%;
-            display: block;
-            background: #fff
-        }
-
-        figure.gif video.oculto {
-            display: none
-        }
-
-        figure.gif .placeholder {
-            padding: 26px 20px;
-            text-align: center;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: .75rem;
-            color: var(--azul-plano);
-        }
-
-        figure.gif .placeholder .clap {
-            font-size: 1.6rem;
-            display: block;
-            margin-bottom: 6px
-        }
-
-        figure.gif figcaption {
-            background: var(--papel);
-            border-top: 1px solid var(--linea);
-            padding: 10px 14px;
-            font-size: .8rem;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
-            font-size: .85rem
-        }
-
-        th,
-        td {
-            border: 1px solid var(--linea);
-            padding: 8px 12px;
-            text-align: left;
-            vertical-align: top
-        }
-
-        th {
-            background: var(--azul-suave);
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: .66rem;
-            letter-spacing: .12em;
-            text-transform: uppercase;
-            color: var(--azul-plano);
-            font-weight: 500;
-        }
-
-        .ciclo-mini {
-            display: flex;
-            gap: 0;
-            align-items: stretch;
-            margin: 12px 0
-        }
-
-        .ciclo-mini .paso {
-            flex: 1;
-            border: 1.5px solid var(--azul-plano);
-            background: var(--papel);
-            padding: 10px 12px;
-            font-size: .78rem
-        }
-
-        .ciclo-mini .paso b {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: .72rem;
-            color: var(--azul-plano);
-            display: block;
-            margin-bottom: 3px;
-            font-weight: 500;
-        }
-
-        .ciclo-mini .flecha {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 30px;
-            color: var(--azul-plano);
-            font-family: 'IBM Plex Mono', monospace;
-            flex-shrink: 0;
-        }
-
-        .regla {
-            background: var(--tinta);
-            color: var(--papel);
-            padding: 22px 24px;
-            margin: 18px 0 0;
-            font-family: 'Archivo', sans-serif;
-            font-weight: 700;
-            font-size: 1.1rem;
-            text-align: center;
-        }
-
-        .regla span {
-            color: #8FB6E8
-        }
-
-        /* ---------- NAV INFERIOR ---------- */
-        .barra-inferior {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 32px;
-            border-top: 1.5px solid var(--tinta);
-            background: var(--papel);
-        }
-
-        .btn-nav {
-            font-family: 'IBM Plex Sans', sans-serif;
-            font-weight: 600;
-            font-size: .9rem;
-            padding: 10px 22px;
-            border-radius: 5px;
-            cursor: pointer;
-            border: 1.5px solid var(--azul-plano);
-        }
-
-        .btn-nav.siguiente {
-            background: var(--azul-plano);
-            color: #fff
-        }
-
-        .btn-nav.siguiente:hover {
-            background: #163C6B
-        }
-
-        .btn-nav.anterior {
-            background: var(--papel);
-            color: var(--azul-plano)
-        }
-
-        .btn-nav.anterior:hover {
-            background: var(--azul-suave)
-        }
-
-        .btn-nav:disabled {
-            opacity: .35;
-            cursor: default
-        }
-
-        .barra-inferior .pista {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: .64rem;
-            color: #7086A0;
-        }
-
-        .btn-pdf {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: var(--tinta);
-            color: #fff;
-            border: none;
-            padding: 10px 18px;
-            font-family: 'IBM Plex Sans', sans-serif;
-            font-weight: 600;
-            font-size: .85rem;
-            border-radius: 6px;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(20, 38, 59, .25);
-            z-index: 10;
-        }
-
-        .btn-pdf:hover {
-            background: #000
-        }
-
-        /* ---------- RESPONSIVE ---------- */
-        @media (max-width:820px) {
-            .app {
-                grid-template-columns: 1fr;
-                margin: 0;
-                border: none;
-                min-height: 100vh
-            }
-
-            aside {
-                border-right: none;
-                border-bottom: 1.5px solid var(--tinta)
-            }
-
-            aside nav {
-                display: flex;
-                overflow-x: auto;
-                padding: 8px 10px
-            }
-
-            .grupo {
-                display: none
-            }
-
-            .paso-link {
-                border-left: none;
-                border-bottom: 3px solid transparent;
-                padding: 8px 10px;
-                white-space: nowrap;
-                width: auto
-            }
-
-            .paso-link.activo {
-                border-bottom-color: var(--sello)
-            }
-
-            .paso-link .etiqueta {
-                display: none
-            }
-
-            .barra-superior,
-            .barra-inferior,
-            article.step {
-                padding-left: 18px;
-                padding-right: 18px
-            }
-
-            .ciclo-mini {
-                flex-direction: column
-            }
-
-            .ciclo-mini .flecha {
-                width: auto;
-                height: 24px;
-                transform: rotate(90deg)
-            }
-        }
-
-        /* ---------- IMPRESIÓN: todos los pasos, sin navegación ---------- */
-        @media print {
-            body {
-                background: #fff
-            }
-
-            .app {
-                display: block;
-                margin: 0;
-                max-width: none;
-                border: none;
-                min-height: 0
-            }
-
-            aside,
-            .barra-inferior,
-            .btn-pdf {
-                display: none
-            }
-
-            .barra-superior {
-                display: none
-            }
-
-            .contenido {
-                overflow: visible
-            }
-
-            article.step {
-                display: block !important;
-                padding: 0 0 20px;
-                border-bottom: 1px solid var(--linea);
-                margin-bottom: 20px;
-                page-break-inside: auto
-            }
-
-            article.step::before {
-                content: attr(data-print-titulo);
-                display: block;
-                font-family: 'Archivo', sans-serif;
-                font-weight: 800;
-                font-size: 1.2rem;
-                margin-bottom: 10px;
-                color: var(--tinta);
-            }
-
-            h3 {
-                page-break-after: avoid
-            }
-
-            figure.gif,
-            .prompt,
-            .checkpoint,
-            .alerta,
-            table {
-                page-break-inside: avoid
-            }
-
-            @page {
-                margin: 14mm;
-                size: A4
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenSpec paso a paso — Construyendo un TodoList</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --papel:#FBFAF6;
+    --tinta:#14263B;
+    --azul-plano:#1D4E89;
+    --azul-suave:#E8EEF6;
+    --sello:#B23A2F;
+    --linea:#C9D3E0;
+    --verde:#2E7D4F;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{font-size:16px}
+  body{
+    font-family:'IBM Plex Sans',sans-serif;
+    background:var(--azul-suave);
+    color:var(--tinta);
+    line-height:1.55;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+
+  .app{
+    max-width:1180px;
+    margin:24px auto;
+    background:var(--papel);
+    border:1.5px solid var(--tinta);
+    display:grid;
+    grid-template-columns:290px 1fr;
+    min-height:calc(100vh - 48px);
+  }
+
+  /* ---------- SIDEBAR ---------- */
+  aside{
+    border-right:1.5px solid var(--tinta);
+    background:#F3F7FC;
+    display:flex;flex-direction:column;
+  }
+  aside .marca{
+    padding:20px 20px 16px;
+    border-bottom:1.5px solid var(--tinta);
+    background:var(--papel);
+  }
+  aside .marca .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--azul-plano);margin-bottom:6px;
+  }
+  aside .marca h1{
+    font-family:'Archivo',sans-serif;font-weight:800;
+    font-size:1.15rem;line-height:1.2;letter-spacing:-.01em;
+  }
+  aside .marca h1 span{color:var(--azul-plano)}
+  aside .marca .progreso{
+    margin-top:12px;height:6px;background:var(--linea);border-radius:3px;overflow:hidden;
+  }
+  aside .marca .progreso i{display:block;height:100%;width:0;background:var(--azul-plano);transition:width .3s}
+  aside .marca .progreso-label{
+    font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:#5A6B80;margin-top:5px;display:block;
+  }
+
+  aside nav{flex:1;overflow-y:auto;padding:10px 0 20px}
+  .grupo{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;
+    color:#7086A0;padding:14px 20px 6px;
+  }
+  .paso-link{
+    display:flex;align-items:center;gap:10px;
+    width:100%;text-align:left;
+    padding:8px 20px;
+    border:none;background:none;cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.84rem;color:var(--tinta);
+    border-left:3px solid transparent;
+  }
+  .paso-link:hover{background:#E7EFF9}
+  .paso-link .dot{
+    width:20px;height:20px;flex-shrink:0;
+    border:1.5px solid var(--azul-plano);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--azul-plano);
+    background:var(--papel);
+  }
+  .paso-link.activo{
+    background:var(--papel);
+    border-left-color:var(--sello);
+    font-weight:600;
+  }
+  .paso-link.visto .dot{background:var(--verde);border-color:var(--verde);color:#fff}
+  .paso-link.activo .dot{background:var(--azul-plano);color:#fff}
+
+  /* ---------- CONTENIDO ---------- */
+  main{display:flex;flex-direction:column;min-width:0}
+  .barra-superior{
+    display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    padding:16px 32px;border-bottom:1.5px solid var(--tinta);
+    background:var(--papel);
+  }
+  .barra-superior .titulo-paso{
+    font-family:'Archivo',sans-serif;font-weight:700;font-size:1.2rem;
+  }
+  .barra-superior .contador{
+    font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--azul-plano);
+    letter-spacing:.12em;white-space:nowrap;
+  }
+
+  .contenido{flex:1;overflow-y:auto}
+  article.step{display:none;padding:26px 32px 32px}
+  article.step.activo{display:block}
+
+  h3{
+    font-family:'Archivo',sans-serif;font-weight:700;font-size:.95rem;
+    margin:20px 0 8px;color:var(--azul-plano);
+  }
+  article.step > h3:first-child{margin-top:0}
+  p{font-size:.92rem;margin-bottom:8px}
+  ul,ol{font-size:.92rem;margin:6px 0 10px 22px}
+  li{margin-bottom:5px}
+  code{
+    font-family:'IBM Plex Mono',monospace;font-size:.82em;
+    background:var(--azul-suave);border:1px solid var(--linea);
+    padding:1px 6px;border-radius:3px;
+  }
+  .bloque-codigo{
+    font-family:'IBM Plex Mono',monospace;font-size:.8rem;
+    background:var(--tinta);color:#DCE7F5;
+    padding:14px 18px;margin:10px 0;border-radius:4px;
+    overflow-x:auto;line-height:1.6;white-space:pre-wrap;
+  }
+  .bloque-codigo .c{color:#7E96B3}
+  .bloque-codigo .k{color:#8FD3A8}
+
+  .prompt{border:1.5px solid var(--azul-plano);background:#F3F7FC;margin:12px 0;border-radius:4px;overflow:hidden}
+  .prompt .prompt-head{
+    font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.15em;
+    text-transform:uppercase;color:#fff;background:var(--azul-plano);padding:5px 14px;
+  }
+  .prompt .prompt-body{margin:0;
+    font-family:'IBM Plex Mono',monospace;font-size:.82rem;
+    padding:12px 16px;white-space:pre-wrap;line-height:1.6;
+  }
+
+  .checkpoint{border-left:3px solid var(--verde);background:#F0F7F2;padding:10px 14px;margin:12px 0;font-size:.85rem}
+  .checkpoint b{color:var(--verde)}
+  .alerta{border-left:3px solid var(--sello);background:#FBF1EF;padding:10px 14px;margin:12px 0;font-size:.85rem}
+  .alerta b{color:var(--sello)}
+
+  figure.gif{
+    margin:16px 0;border:1.5px dashed var(--azul-plano);border-radius:4px;overflow:hidden;
+    background:
+      linear-gradient(var(--linea) 1px, transparent 1px),
+      linear-gradient(90deg, var(--linea) 1px, transparent 1px);
+    background-size:22px 22px;background-color:#F3F7FC;
+  }
+  figure.gif video{width:100%;display:block;background:#fff}
+  figure.gif video.oculto{display:none}
+  figure.gif .placeholder{
+    padding:26px 20px;text-align:center;
+    font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--azul-plano);
+  }
+  figure.gif .placeholder .clap{font-size:1.6rem;display:block;margin-bottom:6px}
+  figure.gif figcaption{
+    background:var(--papel);border-top:1px solid var(--linea);
+    padding:10px 14px;font-size:.8rem;
+  }
+
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.85rem}
+  th,td{border:1px solid var(--linea);padding:8px 12px;text-align:left;vertical-align:top}
+  th{
+    background:var(--azul-suave);
+    font-family:'IBM Plex Mono',monospace;font-size:.66rem;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--azul-plano);font-weight:500;
+  }
+
+  .ciclo-mini{display:flex;gap:0;align-items:stretch;margin:12px 0}
+  .ciclo-mini .paso{flex:1;border:1.5px solid var(--azul-plano);background:var(--papel);padding:10px 12px;font-size:.78rem}
+  .ciclo-mini .paso b{
+    font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--azul-plano);
+    display:block;margin-bottom:3px;font-weight:500;
+  }
+  .ciclo-mini .flecha{
+    display:flex;align-items:center;justify-content:center;width:30px;
+    color:var(--azul-plano);font-family:'IBM Plex Mono',monospace;flex-shrink:0;
+  }
+
+  .regla{
+    background:var(--tinta);color:var(--papel);
+    padding:22px 24px;margin:18px 0 0;
+    font-family:'Archivo',sans-serif;font-weight:700;font-size:1.1rem;text-align:center;
+  }
+  .regla span{color:#8FB6E8}
+
+  /* ---------- NAV INFERIOR ---------- */
+  .barra-inferior{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:14px 32px;border-top:1.5px solid var(--tinta);background:var(--papel);
+  }
+  .btn-nav{
+    font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:.9rem;
+    padding:10px 22px;border-radius:5px;cursor:pointer;
+    border:1.5px solid var(--azul-plano);
+  }
+  .btn-nav.siguiente{background:var(--azul-plano);color:#fff}
+  .btn-nav.siguiente:hover{background:#163C6B}
+  .btn-nav.anterior{background:var(--papel);color:var(--azul-plano)}
+  .btn-nav.anterior:hover{background:var(--azul-suave)}
+  .btn-nav:disabled{opacity:.35;cursor:default}
+  .barra-inferior .pista{
+    font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:#7086A0;
+  }
+
+  .btn-pdf{
+    position:fixed;bottom:24px;right:24px;
+    background:var(--tinta);color:#fff;border:none;
+    padding:10px 18px;font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:.85rem;
+    border-radius:6px;cursor:pointer;box-shadow:0 4px 14px rgba(20,38,59,.25);z-index:10;
+  }
+  .btn-pdf:hover{background:#000}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:820px){
+    .app{grid-template-columns:1fr;margin:0;border:none;min-height:100vh}
+    aside{border-right:none;border-bottom:1.5px solid var(--tinta)}
+    aside nav{display:flex;overflow-x:auto;padding:8px 10px}
+    .grupo{display:none}
+    .paso-link{border-left:none;border-bottom:3px solid transparent;padding:8px 10px;white-space:nowrap;width:auto}
+    .paso-link.activo{border-bottom-color:var(--sello)}
+    .paso-link .etiqueta{display:none}
+    .barra-superior,.barra-inferior,article.step{padding-left:18px;padding-right:18px}
+    .ciclo-mini{flex-direction:column}
+    .ciclo-mini .flecha{width:auto;height:24px;transform:rotate(90deg)}
+  }
+
+  /* ---------- IMPRESIÓN: todos los pasos, sin navegación ---------- */
+  @media print{
+    body{background:#fff}
+    .app{display:block;margin:0;max-width:none;border:none;min-height:0}
+    aside,.barra-inferior,.btn-pdf{display:none}
+    .barra-superior{display:none}
+    .contenido{overflow:visible}
+    article.step{display:block !important;padding:0 0 20px;border-bottom:1px solid var(--linea);margin-bottom:20px;page-break-inside:auto}
+    article.step::before{
+      content:attr(data-print-titulo);
+      display:block;
+      font-family:'Archivo',sans-serif;font-weight:800;font-size:1.2rem;
+      margin-bottom:10px;color:var(--tinta);
+    }
+    h3{page-break-after:avoid}
+    figure.gif,.prompt,.checkpoint,.alerta,table{page-break-inside:avoid}
+    @page{margin:14mm;size:A4}
+  }
+</style>
 </head>
-
 <body>
 
-    <div class="app">
+<div class="app">
 
-        <!-- ================= SIDEBAR ================= -->
-        <aside>
-            <div class="marca">
-                <div class="eyebrow">Tutorial práctico</div>
-                <h1>OpenSpec: <span>un TodoList paso a paso</span></h1>
-                <div class="progreso"><i id="barra-progreso"></i></div>
-                <span class="progreso-label" id="label-progreso"></span>
-            </div>
-            <nav id="nav-pasos"><!-- generado por JS --></nav>
-        </aside>
+  <!-- ================= SIDEBAR ================= -->
+  <aside>
+    <div class="marca">
+      <div class="eyebrow">Tutorial práctico</div>
+      <h1>OpenSpec: <span>un TodoList paso a paso</span></h1>
+      <div class="progreso"><i id="barra-progreso"></i></div>
+      <span class="progreso-label" id="label-progreso"></span>
+    </div>
+    <nav id="nav-pasos"><!-- generado por JS --></nav>
+  </aside>
 
-        <!-- ================= CONTENIDO ================= -->
-        <main>
-            <div class="barra-superior">
-                <div class="titulo-paso" id="titulo-actual"></div>
-                <div class="contador" id="contador"></div>
-            </div>
+  <!-- ================= CONTENIDO ================= -->
+  <main>
+    <div class="barra-superior">
+      <div class="titulo-paso" id="titulo-actual"></div>
+      <div class="contador" id="contador"></div>
+    </div>
 
-            <div class="contenido" id="contenido">
+    <div class="contenido" id="contenido">
 
-                <!-- PASO: Prerrequisitos -->
-                <article class="step" data-grupo="Inicio" data-titulo="Prerrequisitos"
-                    data-print-titulo="Prerrequisitos">
-                    <p>Antes de la primera sesión, cada estudiante necesita tener instalado:</p>
-                    <table>
-                        <tr>
-                            <th>Herramienta</th>
-                            <th>Para qué</th>
-                            <th>Verificación</th>
-                        </tr>
-                        <tr>
-                            <td><strong>Bun</strong> (≥ 1.1)</td>
-                            <td>Ejecuta la app y trae SQLite integrado (<code>bun:sqlite</code>), sin instalar nada
-                                extra de base de datos.</td>
-                            <td><code>bun --version</code></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Git</strong></td>
-                            <td>Clonar el repo base y guardar el historial de cambios.</td>
-                            <td><code>git --version</code></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Claude Code</strong> — CLI o app de escritorio, cualquiera de las dos</td>
-                            <td>Es quien lee las specs y escribe el código. Aquí se escriben los comandos
-                                <code>/opsx:*</code>.</td>
-                            <td><code>claude --version</code> o abrir la app</td>
-                        </tr>
-                        <tr>
-                            <td><strong>VS Code</strong> (o cualquier editor)</td>
-                            <td>Solo para <em>leer</em> los documentos que genera OpenSpec. No se escribe código.</td>
-                            <td>—</td>
-                        </tr>
-                    </table>
-                    <h3>Cómo instalar cada herramienta</h3>
+      <!-- PASO: Prerrequisitos -->
+      <article class="step" data-grupo="Inicio" data-titulo="Prerrequisitos" data-print-titulo="Prerrequisitos">
+        <p>Antes de la primera sesión, cada estudiante necesita tener instalado:</p>
+        <table>
+          <tr><th>Herramienta</th><th>Para qué</th><th>Verificación</th></tr>
+          <tr><td><strong>Bun</strong> (≥ 1.1)</td><td>Ejecuta la app y trae SQLite integrado (<code>bun:sqlite</code>), sin instalar nada extra de base de datos.</td><td><code>bun --version</code></td></tr>
+          <tr><td><strong>Git</strong></td><td>Clonar el repo base y guardar el historial de cambios.</td><td><code>git --version</code></td></tr>
+          <tr><td><strong>Claude Code</strong> — CLI o app de escritorio, cualquiera de las dos</td><td>Es quien lee las specs y escribe el código. Aquí se escriben los comandos <code>/opsx:*</code>.</td><td><code>claude --version</code> o abrir la app</td></tr>
+          <tr><td><strong>VS Code</strong> (o cualquier editor)</td><td>Solo para <em>leer</em> los documentos que genera OpenSpec. No se escribe código.</td><td>—</td></tr>
+        </table>
+        <h3>Cómo instalar cada herramienta</h3>
 
-                    <p><strong>1 · Bun</strong> — un solo comando según tu sistema:</p>
-                    <div class="bloque-codigo"><span class="c"># macOS / Linux</span>
-                        curl -fsSL https://bun.sh/install | bash
+        <p><strong>1 · Bun</strong> — un solo comando según tu sistema:</p>
+        <pre class="bloque-codigo"><span class="c"># macOS / Linux</span>
+curl -fsSL https://bun.sh/install | bash
 
-                        <span class="c"># Windows (PowerShell)</span>
-                        powershell -c "irm bun.sh/install.ps1 | iex"
-                    </div>
-                    <p>Cierra y vuelve a abrir la terminal, y verifica con <code>bun --version</code>.</p>
+<span class="c"># Windows (PowerShell)</span>
+powershell -c "irm bun.sh/install.ps1 | iex"</pre>
+        <p>Cierra y vuelve a abrir la terminal, y verifica con <code>bun --version</code>.</p>
 
-                    <p><strong>2 · Git</strong>:</p>
-                    <div class="bloque-codigo"><span class="c"># macOS (instala las herramientas de línea de
-                            comandos)</span>
-                        xcode-select --install
+        <p><strong>2 · Git</strong>:</p>
+        <pre class="bloque-codigo"><span class="c"># macOS (instala las herramientas de línea de comandos)</span>
+xcode-select --install
 
-                        <span class="c"># Linux (Debian/Ubuntu)</span>
-                        sudo apt install git
-                    </div>
-                    <p>En <strong>Windows</strong>, descarga <em>Git for Windows</em> desde <code>git-scm.com</code> e
-                        instala con las opciones por defecto (deja marcado "Add Git to PATH"). Además de Git, esto le da
-                        a Claude Code la terminal Git Bash que usa internamente en Windows.</p>
+<span class="c"># Linux (Debian/Ubuntu)</span>
+sudo apt install git</pre>
+        <p>En <strong>Windows</strong>, descarga <em>Git for Windows</em> desde <code>git-scm.com</code> e instala con las opciones por defecto (deja marcado "Add Git to PATH"). Además de Git, esto le da a Claude Code la terminal Git Bash que usa internamente en Windows.</p>
 
-                    <p><strong>3 · Claude Code</strong> — requiere una cuenta con plan de pago (Pro, Max, Team o
-                        Console; el plan gratuito de Claude no lo incluye). El instalador oficial no necesita nada más
-                        (ni Node.js) y se actualiza solo:</p>
-                    <div class="bloque-codigo"><span class="c"># macOS / Linux / WSL</span>
-                        curl -fsSL https://claude.ai/install.sh | bash
+        <p><strong>3 · Claude Code</strong> — requiere una cuenta con plan de pago (Pro, Max, Team o Console; el plan gratuito de Claude no lo incluye). El instalador oficial no necesita nada más (ni Node.js) y se actualiza solo:</p>
+        <pre class="bloque-codigo"><span class="c"># macOS / Linux / WSL</span>
+curl -fsSL https://claude.ai/install.sh | bash
 
-                        <span class="c"># Windows (PowerShell, sin permisos de administrador)</span>
-                        irm https://claude.ai/install.ps1 | iex
-                    </div>
-                    <p>Abre una terminal nueva, verifica con <code>claude --version</code> y ejecuta <code>claude</code>
-                        una primera vez: se abrirá el navegador para iniciar sesión con tu cuenta (solo la primera vez).
-                        Si algo falla, <code>claude doctor</code> diagnostica los problemas más comunes.</p>
-                    <p><strong>¿Prefieres la app de escritorio en vez de la terminal?</strong> Descárgala desde la
-                        página oficial de Claude Code e inicia sesión con la misma cuenta. El tutorial funciona igual
-                        con ambas — en el paso "El repo base" se explica el único detalle a tener en cuenta.</p>
+<span class="c"># Windows (PowerShell, sin permisos de administrador)</span>
+irm https://claude.ai/install.ps1 | iex</pre>
+        <p>Abre una terminal nueva, verifica con <code>claude --version</code> y ejecuta <code>claude</code> una primera vez: se abrirá el navegador para iniciar sesión con tu cuenta (solo la primera vez). Si algo falla, <code>claude doctor</code> diagnostica los problemas más comunes.</p>
+        <p><strong>¿Prefieres la app de escritorio en vez de la terminal?</strong> Descárgala desde la página oficial de Claude Code e inicia sesión con la misma cuenta. El tutorial funciona igual con ambas — en el paso "El repo base" se explica el único detalle a tener en cuenta.</p>
 
-                    <p><strong>4 · VS Code</strong> — descarga el instalador para tu sistema desde
-                        <code>code.visualstudio.com</code> e instala con las opciones por defecto.</p>
+        <p><strong>4 · VS Code</strong> — descarga el instalador para tu sistema desde <code>code.visualstudio.com</code> e instala con las opciones por defecto.</p>
 
-                    <div class="alerta"><b>Importante:</b> el estudiante no necesita saber React, SQL ni TypeScript. Su
-                        trabajo es describir, leer y aprobar. La IA construye.</div>
-                    <div class="checkpoint"><b>✓ Verificación final:</b> las tres verificaciones de la tabla responden
-                        con un número de versión, y <code>claude</code> abre sesión sin pedir login de nuevo. Con eso
-                        estás listo para el repo base.</div>
-                </article>
+        <div class="alerta"><b>Importante:</b> el estudiante no necesita saber React, SQL ni TypeScript. Su trabajo es describir, leer y aprobar. La IA construye.</div>
+        <div class="checkpoint"><b>✓ Verificación final:</b> las tres verificaciones de la tabla responden con un número de versión, y <code>claude</code> abre sesión sin pedir login de nuevo. Con eso estás listo para el repo base.</div>
+      </article>
 
-                <!-- PASO: Repo base -->
-                <article class="step" data-grupo="Inicio" data-titulo="El repo base"
-                    data-print-titulo="El repo base: qué trae y por qué">
-                    <p>Todo parte de un repositorio ya preparado (<code>openspec-todolist-base</code>) que se entrega al
-                        estudiante. La idea: que el primer <code>bun dev</code> funcione a la primera y que el
-                        estudiante solo agregue funcionalidad vía OpenSpec.</p>
+      <!-- PASO: Repo base -->
+      <article class="step" data-grupo="Inicio" data-titulo="El repo base" data-print-titulo="El repo base: qué trae y por qué">
+        <p>Todo parte de un repositorio ya preparado (<code>openspec-todolist-base</code>) que se entrega al estudiante. La idea: que el primer <code>bun dev</code> funcione a la primera y que el estudiante solo agregue funcionalidad vía OpenSpec.</p>
 
-                    <div class="bloque-codigo">openspec-todolist-base/
-                        ├── <span class="k">app/</span> <span class="c"># Frontend React (Vite). Arranca con una
-                            pantalla vacía "TodoList".</span>
-                        ├── <span class="k">server/</span> <span class="c"># API en Bun + bun:sqlite. Un endpoint
-                            /health de ejemplo.</span>
-                        │ └── db.sqlite <span class="c"># Base de datos local. Un archivo, cero configuración.</span>
-                        ├── <span class="k">.claude/</span>
-                        │ ├── skills/ <span class="c"># Skills preinstaladas: convenciones de React, API y
-                            SQLite,</span>
-                        │ │ <span class="c"># más los skills de OpenSpec. La IA los lee automáticamente.</span>
-                        │ └── commands/opsx/ <span class="c"># Los comandos /opsx:* ya generados y commiteados.</span>
-                        │ <span class="c"># Por eso el estudiante NUNCA ejecuta "openspec init".</span>
-                        ├── <span class="k">openspec/</span>
-                        │ ├── project.md <span class="c"># La "constitución" del proyecto (ya escrita, ver
-                            abajo).</span>
-                        │ ├── config.yaml <span class="c"># Configuración de OpenSpec (generada, no se toca).</span>
-                        │ ├── specs/ <span class="c"># El plano maestro. Empieza vacío; crece con cada módulo.</span>
-                        │ └── changes/ <span class="c"># Aquí aparecerán las propuestas del estudiante.</span>
-                        └── package.json</div>
+        <pre class="bloque-codigo">openspec-todolist-base/
+├── <span class="k">app/</span>                  <span class="c"># Frontend React (Vite). Arranca con una pantalla vacía "TodoList".</span>
+├── <span class="k">server/</span>               <span class="c"># API en Bun + bun:sqlite. Un endpoint /health de ejemplo.</span>
+│   └── db.sqlite         <span class="c"># Base de datos local. Un archivo, cero configuración.</span>
+├── <span class="k">.claude/</span>
+│   ├── skills/           <span class="c"># Skills preinstaladas: convenciones de React, API y SQLite,</span>
+│   │                     <span class="c"># más los skills de OpenSpec. La IA los lee automáticamente.</span>
+│   └── commands/opsx/    <span class="c"># Los comandos /opsx:* ya generados y commiteados.</span>
+│                         <span class="c"># Por eso el estudiante NUNCA ejecuta "openspec init".</span>
+├── <span class="k">openspec/</span>
+│   ├── project.md        <span class="c"># La "constitución" del proyecto (ya escrita, ver abajo).</span>
+│   ├── config.yaml       <span class="c"># Configuración de OpenSpec (generada, no se toca).</span>
+│   ├── specs/            <span class="c"># El plano maestro. Empieza vacío; crece con cada módulo.</span>
+│   └── changes/          <span class="c"># Aquí aparecerán las propuestas del estudiante.</span>
+└── package.json</pre>
 
-                    <h3>La constitución del proyecto: openspec/project.md</h3>
-                    <p>Este archivo ya viene escrito en el repo base y es el más importante: OpenSpec lo inyecta en
-                        <em>todo</em> lo que la IA genera, para que nunca "olvide" el stack. Contiene reglas como:</p>
-                    <ul>
-                        <li>Frontend: React + Vite, componentes simples, sin librerías de UI externas.</li>
-                        <li>Backend: Bun con <code>bun:sqlite</code>. Un solo archivo de base de datos:
-                            <code>server/db.sqlite</code>.</li>
-                        <li>API: endpoints REST en JSON bajo <code>/api/*</code>.</li>
-                        <li>Todo texto visible al usuario, en español.</li>
-                    </ul>
+        <h3>La constitución del proyecto: openspec/project.md</h3>
+        <p>Este archivo ya viene escrito en el repo base y es el más importante: OpenSpec lo inyecta en <em>todo</em> lo que la IA genera, para que nunca "olvide" el stack. Contiene reglas como:</p>
+        <ul>
+          <li>Frontend: React + Vite, componentes simples, sin librerías de UI externas.</li>
+          <li>Backend: Bun con <code>bun:sqlite</code>. Un solo archivo de base de datos: <code>server/db.sqlite</code>.</li>
+          <li>API: endpoints REST en JSON bajo <code>/api/*</code>.</li>
+          <li>Todo texto visible al usuario, en español.</li>
+        </ul>
 
-                    <h3>Puesta en marcha</h3>
-                    <div class="bloque-codigo">git clone &lt;url-del-repo&gt; openspec-todolist
-                        cd openspec-todolist
-                        bun install
-                        bun dev <span class="c"># abre http://localhost:5173 → pantalla base "TodoList"</span></div>
+        <h3>Puesta en marcha</h3>
+        <pre class="bloque-codigo">git clone &lt;url-del-repo&gt; openspec-todolist
+cd openspec-todolist
+bun install
+bun dev        <span class="c"># abre http://localhost:5173 → pantalla base "TodoList"</span></pre>
 
-                    <figure class="gif">
-                        <video src="assets/video-01-setup.mp4" title="Clonar el repo y arrancar la app base" autoplay
-                            muted loop playsinline controls preload="metadata"
-                            onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
-                        <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo —
-                            disponible próximamente</div>
-                        <figcaption>Puesta en marcha: clonar el repo, instalar dependencias y arrancar la app base.
-                        </figcaption>
-                    </figure>
+        <figure class="gif">
+          <video src="assets/video-01-setup.mp4" title="Clonar el repo y arrancar la app base" autoplay muted loop playsinline controls preload="metadata" onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
+          <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo — disponible próximamente</div>
+          <figcaption>Puesta en marcha: clonar el repo, instalar dependencias y arrancar la app base.</figcaption>
+        </figure>
 
-                    <h3>¿Usas la app de escritorio de Claude Code (no la terminal)?</h3>
-                    <p>Funciona exactamente igual. Los comandos <code>/opsx:*</code> no viven en la app: viven en el
-                        repo (carpetas <code>.claude/commands/opsx/</code> y <code>.claude/skills/</code>), y ya vienen
-                        incluidos en el repo base. Solo hay una regla:</p>
-                    <ol>
-                        <li>Abre la app y crea una <strong>nueva sesión seleccionando la carpeta del repo
-                                clonado</strong> (esto es lo crítico: los comandos son por-proyecto).</li>
-                        <li>Escribe <code>/opsx</code> en el chat: el autocompletado muestra <code>propose</code>,
-                            <code>apply</code>, <code>archive</code>…</li>
-                        <li>Sigue el tutorial normalmente. Donde diga "abre Claude Code", es tu sesión en la app.</li>
-                    </ol>
-                    <div class="alerta"><b>Si los comandos no aparecen:</b> pídele a Claude en el chat que ejecute
-                        <code>openspec update</code> (regenera los archivos de comandos) y abre una <strong>sesión
-                            nueva</strong> — los comandos se cargan al inicio de cada sesión.</div>
+        <h3>¿Usas la app de escritorio de Claude Code (no la terminal)?</h3>
+        <p>Funciona exactamente igual. Los comandos <code>/opsx:*</code> no viven en la app: viven en el repo (carpetas <code>.claude/commands/opsx/</code> y <code>.claude/skills/</code>), y ya vienen incluidos en el repo base. Solo hay una regla:</p>
+        <ol>
+          <li>Abre la app y crea una <strong>nueva sesión seleccionando la carpeta del repo clonado</strong> (esto es lo crítico: los comandos son por-proyecto).</li>
+          <li>Escribe <code>/opsx</code> en el chat: el autocompletado muestra <code>propose</code>, <code>apply</code>, <code>archive</code>…</li>
+          <li>Sigue el tutorial normalmente. Donde diga "abre Claude Code", es tu sesión en la app.</li>
+        </ol>
+        <div class="alerta"><b>Si los comandos no aparecen:</b> pídele a Claude en el chat que ejecute <code>openspec update</code> (regenera los archivos de comandos) y abre una <strong>sesión nueva</strong> — los comandos se cargan al inicio de cada sesión.</div>
 
-                    <figure class="gif">
-                        <video src="assets/video-00-desktop.mp4"
-                            title="Abrir el repo en la app de escritorio y ver los comandos opsx" autoplay muted loop
-                            playsinline controls preload="metadata"
-                            onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
-                        <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo —
-                            disponible próximamente</div>
-                        <figcaption>App de escritorio: sesión nueva sobre la carpeta del repo y los comandos
-                            <code>/opsx</code> en el autocompletado.</figcaption>
-                    </figure>
+        <figure class="gif">
+          <video src="assets/video-00-desktop.mp4" title="Abrir el repo en la app de escritorio y ver los comandos opsx" autoplay muted loop playsinline controls preload="metadata" onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
+          <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo — disponible próximamente</div>
+          <figcaption>App de escritorio: sesión nueva sobre la carpeta del repo y los comandos <code>/opsx</code> en el autocompletado.</figcaption>
+        </figure>
 
-                    <div class="checkpoint"><b>✓ Checkpoint 0:</b> la app abre en el navegador y muestra la pantalla
-                        base. Si esto no funciona, no continúes: pide ayuda aquí.</div>
-                </article>
+        <div class="checkpoint"><b>✓ Checkpoint 0:</b> la app abre en el navegador y muestra la pantalla base. Si esto no funciona, no continúes: pide ayuda aquí.</div>
+      </article>
 
-                <!-- PASO: El ciclo -->
-                <article class="step" data-grupo="Inicio" data-titulo="El ciclo OpenSpec"
-                    data-print-titulo="El ciclo que vas a repetir 3 veces">
-                    <p>Cada módulo de este tutorial es exactamente el mismo ciclo. Al terminar el módulo 3 lo tendrás
-                        automatizado en la cabeza:</p>
-                    <div class="ciclo-mini">
-                        <div class="paso"><b>1 · /opsx:propose</b>Describes el cambio. La IA genera el plano.</div>
-                        <div class="flecha">→</div>
-                        <div class="paso"><b>2 · Leer y corregir</b>Revisas los documentos. Ajustas lo que no cuadre.
-                        </div>
-                        <div class="flecha">→</div>
-                        <div class="paso"><b>3 · /opsx:apply</b>La IA construye siguiendo las tareas.</div>
-                        <div class="flecha">→</div>
-                        <div class="paso"><b>4 · Probar</b>Usas la app y verificas.</div>
-                        <div class="flecha">→</div>
-                        <div class="paso"><b>5 · /opsx:archive</b>El cambio pasa al plano maestro.</div>
-                    </div>
-                    <div class="alerta"><b>Regla de contexto:</b> entre módulo y módulo, limpia el contexto del
-                        asistente (en Claude Code: <code>/clear</code>). OpenSpec funciona mejor con la mente fresca:
-                        todo lo que necesita saber está en las specs, no en el chat.</div>
-                </article>
+      <!-- PASO: El ciclo -->
+      <article class="step" data-grupo="Inicio" data-titulo="El ciclo OpenSpec" data-print-titulo="El ciclo que vas a repetir 3 veces">
+        <p>Cada módulo de este tutorial es exactamente el mismo ciclo. Al terminar el módulo 3 lo tendrás automatizado en la cabeza:</p>
+        <div class="ciclo-mini">
+          <div class="paso"><b>1 · /opsx:propose</b>Describes el cambio. La IA genera el plano.</div>
+          <div class="flecha">→</div>
+          <div class="paso"><b>2 · Leer y corregir</b>Revisas los documentos. Ajustas lo que no cuadre.</div>
+          <div class="flecha">→</div>
+          <div class="paso"><b>3 · /opsx:apply</b>La IA construye siguiendo las tareas.</div>
+          <div class="flecha">→</div>
+          <div class="paso"><b>4 · Probar</b>Usas la app y verificas.</div>
+          <div class="flecha">→</div>
+          <div class="paso"><b>5 · /opsx:archive</b>El cambio pasa al plano maestro.</div>
+        </div>
+        <div class="alerta"><b>Regla de contexto:</b> entre módulo y módulo, limpia el contexto del asistente (en Claude Code: <code>/clear</code>). OpenSpec funciona mejor con la mente fresca: todo lo que necesita saber está en las specs, no en el chat.</div>
+      </article>
 
-                <!-- ============ MÓDULO 1 ============ -->
+      <!-- ============ MÓDULO 1 ============ -->
 
-                <article class="step" data-grupo="Módulo 1 · Proyectos" data-titulo="1.1 Proponer"
-                    data-print-titulo="Módulo 1 — Paso 1.1: Proponer">
-                    <p><strong>Objetivo del módulo:</strong> poder crear, listar, renombrar y eliminar proyectos. Es el
-                        módulo más guiado; los siguientes van soltando la mano.</p>
-                    <p>Abre Claude Code en la carpeta del repo (<code>claude</code>) y escribe:</p>
-                    <div class="prompt">
-                        <div class="prompt-head">Copia y pega en Claude Code</div>
-                        <div class="prompt-body">/opsx:propose crear-proyectos
+      <article class="step" data-grupo="Módulo 1 · Proyectos" data-titulo="1.1 Proponer" data-print-titulo="Módulo 1 — Paso 1.1: Proponer">
+        <p><strong>Objetivo del módulo:</strong> poder crear, listar, renombrar y eliminar proyectos. Es el módulo más guiado; los siguientes van soltando la mano.</p>
+        <p>Abre Claude Code en la carpeta del repo (<code>claude</code>) y escribe:</p>
+        <div class="prompt">
+          <div class="prompt-head">Copia y pega en Claude Code</div>
+          <pre class="prompt-body">/opsx:propose crear-proyectos
 
-                            Quiero gestionar proyectos en el TodoList:
-                            - Un proyecto tiene: nombre (obligatorio) y fecha de creación.
-                            - Puedo: crear, ver la lista, renombrar y eliminar un proyecto.
-                            - Al eliminar, pedir confirmación.
-                            - UI: barra lateral izquierda con la lista de proyectos y un botón "Nuevo proyecto".
-                            - Guardar todo en la base SQLite del repo.</div>
-                    </div>
-                    <p>La IA creará la carpeta <code>openspec/changes/crear-proyectos/</code> con 4 documentos:
-                        <code>proposal.md</code>, <code>specs/</code>, <code>design.md</code> y <code>tasks.md</code>.
-                    </p>
+Quiero gestionar proyectos en el TodoList:
+- Un proyecto tiene: nombre (obligatorio) y fecha de creación.
+- Puedo: crear, ver la lista, renombrar y eliminar un proyecto.
+- Al eliminar, pedir confirmación.
+- UI: barra lateral izquierda con la lista de proyectos y un botón "Nuevo proyecto".
+- Guardar todo en la base SQLite del repo.</pre>
+        </div>
+        <p>La IA creará la carpeta <code>openspec/changes/crear-proyectos/</code> con 4 documentos: <code>proposal.md</code>, <code>specs/</code>, <code>design.md</code> y <code>tasks.md</code>.</p>
 
-                    <figure class="gif">
-                        <video src="assets/video-02-propose.mp4" title="Comando propose y carpeta de cambio generada"
-                            autoplay muted loop playsinline controls preload="metadata"
-                            onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
-                        <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo —
-                            disponible próximamente</div>
-                        <figcaption>El propose en acción: la carpeta del cambio aparece con sus 4 documentos.
-                        </figcaption>
-                    </figure>
-                </article>
+        <figure class="gif">
+          <video src="assets/video-02-propose.mp4" title="Comando propose y carpeta de cambio generada" autoplay muted loop playsinline controls preload="metadata" onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
+          <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo — disponible próximamente</div>
+          <figcaption>El propose en acción: la carpeta del cambio aparece con sus 4 documentos.</figcaption>
+        </figure>
+      </article>
 
-                <article class="step" data-grupo="Módulo 1 · Proyectos" data-titulo="1.2 Leer y corregir"
-                    data-print-titulo="Módulo 1 — Paso 1.2: Leer y corregir">
-                    <p>Este es el paso que separa esto del "vibe coding". Abre los documentos en VS Code y hazte estas
-                        preguntas:</p>
-                    <table>
-                        <tr>
-                            <th>Documento</th>
-                            <th>Pregunta</th>
-                        </tr>
-                        <tr>
-                            <td><code>proposal.md</code></td>
-                            <td>¿Entendió que quiero gestionar proyectos, no tareas todavía?</td>
-                        </tr>
-                        <tr>
-                            <td><code>specs/</code></td>
-                            <td>¿Aparecen los 4 casos: crear, listar, renombrar, eliminar con confirmación?</td>
-                        </tr>
-                        <tr>
-                            <td><code>design.md</code></td>
-                            <td>¿Menciona una tabla <code>projects</code> en SQLite y endpoints
-                                <code>/api/projects</code>? (No hace falta entenderlo todo, solo que suene coherente con
-                                el pedido.)</td>
-                        </tr>
-                        <tr>
-                            <td><code>tasks.md</code></td>
-                            <td>¿Son pasos pequeños y concretos? ("Crear tabla", "Endpoint de listado", "Componente de
-                                barra lateral"…)</td>
-                        </tr>
-                    </table>
-                    <p><strong>Ejercicio obligatorio:</strong> introduce un cambio a propósito. Dile a la IA en el chat:
-                    </p>
-                    <div class="prompt">
-                        <div class="prompt-head">Ejercicio: corregir el plano antes de construir</div>
-                        <div class="prompt-body">Actualiza la propuesta: los proyectos deben mostrarse ordenados del más
-                            reciente al más antiguo.</div>
-                    </div>
-                    <p>Verifica que la IA modificó los documentos (no el código, que aún no existe). Esa es la gracia:
-                        corregir aquí es gratis.</p>
+      <article class="step" data-grupo="Módulo 1 · Proyectos" data-titulo="1.2 Leer y corregir" data-print-titulo="Módulo 1 — Paso 1.2: Leer y corregir">
+        <p>Este es el paso que separa esto del "vibe coding". Abre los documentos en VS Code y hazte estas preguntas:</p>
+        <table>
+          <tr><th>Documento</th><th>Pregunta</th></tr>
+          <tr><td><code>proposal.md</code></td><td>¿Entendió que quiero gestionar proyectos, no tareas todavía?</td></tr>
+          <tr><td><code>specs/</code></td><td>¿Aparecen los 4 casos: crear, listar, renombrar, eliminar con confirmación?</td></tr>
+          <tr><td><code>design.md</code></td><td>¿Menciona una tabla <code>projects</code> en SQLite y endpoints <code>/api/projects</code>? (No hace falta entenderlo todo, solo que suene coherente con el pedido.)</td></tr>
+          <tr><td><code>tasks.md</code></td><td>¿Son pasos pequeños y concretos? ("Crear tabla", "Endpoint de listado", "Componente de barra lateral"…)</td></tr>
+        </table>
+        <p><strong>Ejercicio obligatorio:</strong> introduce un cambio a propósito. Dile a la IA en el chat:</p>
+        <div class="prompt">
+          <div class="prompt-head">Ejercicio: corregir el plano antes de construir</div>
+          <pre class="prompt-body">Actualiza la propuesta: los proyectos deben mostrarse ordenados del más reciente al más antiguo.</pre>
+        </div>
+        <p>Verifica que la IA modificó los documentos (no el código, que aún no existe). Esa es la gracia: corregir aquí es gratis.</p>
 
-                    <figure class="gif">
-                        <video src="assets/video-03-review.mp4" title="Revisión y corrección de la propuesta" autoplay
-                            muted loop playsinline controls preload="metadata"
-                            onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
-                        <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo —
-                            disponible próximamente</div>
-                        <figcaption>Corregir el plano: la propuesta se actualiza antes de que exista código.
-                        </figcaption>
-                    </figure>
-                </article>
+        <figure class="gif">
+          <video src="assets/video-03-review.mp4" title="Revisión y corrección de la propuesta" autoplay muted loop playsinline controls preload="metadata" onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
+          <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo — disponible próximamente</div>
+          <figcaption>Corregir el plano: la propuesta se actualiza antes de que exista código.</figcaption>
+        </figure>
+      </article>
 
-                <article class="step" data-grupo="Módulo 1 · Proyectos" data-titulo="1.3 Construir"
-                    data-print-titulo="Módulo 1 — Paso 1.3: Construir">
-                    <div class="prompt">
-                        <div class="prompt-head">Copia y pega en Claude Code</div>
-                        <div class="prompt-body">/opsx:apply crear-proyectos</div>
-                    </div>
-                    <p>La IA ejecuta <code>tasks.md</code> línea por línea, marcando cada tarea al completarla. No
-                        intervengas salvo que te pregunte algo.</p>
+      <article class="step" data-grupo="Módulo 1 · Proyectos" data-titulo="1.3 Construir" data-print-titulo="Módulo 1 — Paso 1.3: Construir">
+        <div class="prompt">
+          <div class="prompt-head">Copia y pega en Claude Code</div>
+          <pre class="prompt-body">/opsx:apply crear-proyectos</pre>
+        </div>
+        <p>La IA ejecuta <code>tasks.md</code> línea por línea, marcando cada tarea al completarla. No intervengas salvo que te pregunte algo.</p>
 
-                    <figure class="gif">
-                        <video src="assets/video-04-apply.mp4" title="Apply ejecutando tareas" autoplay muted loop
-                            playsinline controls preload="metadata"
-                            onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
-                        <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo —
-                            disponible próximamente</div>
-                        <figcaption>El apply en acción: las tareas se completan una a una.</figcaption>
-                    </figure>
-                </article>
+        <figure class="gif">
+          <video src="assets/video-04-apply.mp4" title="Apply ejecutando tareas" autoplay muted loop playsinline controls preload="metadata" onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
+          <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo — disponible próximamente</div>
+          <figcaption>El apply en acción: las tareas se completan una a una.</figcaption>
+        </figure>
+      </article>
 
-                <article class="step" data-grupo="Módulo 1 · Proyectos" data-titulo="1.4 Probar"
-                    data-print-titulo="Módulo 1 — Paso 1.4: Probar">
-                    <p>Con <code>bun dev</code> corriendo, en el navegador: crea 3 proyectos ("Casa", "Trabajo",
-                        "Estudio"), renombra uno, elimina otro y confirma que pide confirmación. Detén y vuelve a
-                        arrancar la app: los proyectos deben seguir ahí (eso es SQLite persistiendo en
-                        <code>db.sqlite</code>).</p>
+      <article class="step" data-grupo="Módulo 1 · Proyectos" data-titulo="1.4 Probar" data-print-titulo="Módulo 1 — Paso 1.4: Probar">
+        <p>Con <code>bun dev</code> corriendo, en el navegador: crea 3 proyectos ("Casa", "Trabajo", "Estudio"), renombra uno, elimina otro y confirma que pide confirmación. Detén y vuelve a arrancar la app: los proyectos deben seguir ahí (eso es SQLite persistiendo en <code>db.sqlite</code>).</p>
 
-                    <figure class="gif">
-                        <video src="assets/video-05-demo-proyectos.mp4" title="Demo de proyectos funcionando" autoplay
-                            muted loop playsinline controls preload="metadata"
-                            onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
-                        <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo —
-                            disponible próximamente</div>
-                        <figcaption>Proyectos funcionando: crear, renombrar, eliminar — y los datos persisten al
-                            recargar.</figcaption>
-                    </figure>
-                </article>
+        <figure class="gif">
+          <video src="assets/video-05-demo-proyectos.mp4" title="Demo de proyectos funcionando" autoplay muted loop playsinline controls preload="metadata" onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
+          <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo — disponible próximamente</div>
+          <figcaption>Proyectos funcionando: crear, renombrar, eliminar — y los datos persisten al recargar.</figcaption>
+        </figure>
+      </article>
 
-                <article class="step" data-grupo="Módulo 1 · Proyectos" data-titulo="1.5 Archivar"
-                    data-print-titulo="Módulo 1 — Paso 1.5: Archivar">
-                    <div class="prompt">
-                        <div class="prompt-head">Copia y pega en Claude Code</div>
-                        <div class="prompt-body">/opsx:archive crear-proyectos</div>
-                    </div>
-                    <p>Mira ahora <code>openspec/specs/</code>: el plano maestro ya describe cómo funcionan los
-                        proyectos. La carpeta del cambio se movió al archivo histórico. Cierra con un commit:</p>
-                    <div class="bloque-codigo">git add -A && git commit -m "Módulo 1: proyectos"</div>
-                    <div class="checkpoint"><b>✓ Checkpoint 1:</b> proyectos funcionando + specs actualizadas + commit
-                        hecho. Limpia el contexto (<code>/clear</code>) antes del módulo 2.</div>
-                </article>
+      <article class="step" data-grupo="Módulo 1 · Proyectos" data-titulo="1.5 Archivar" data-print-titulo="Módulo 1 — Paso 1.5: Archivar">
+        <div class="prompt">
+          <div class="prompt-head">Copia y pega en Claude Code</div>
+          <pre class="prompt-body">/opsx:archive crear-proyectos</pre>
+        </div>
+        <p>Mira ahora <code>openspec/specs/</code>: el plano maestro ya describe cómo funcionan los proyectos. La carpeta del cambio se movió al archivo histórico. Cierra con un commit:</p>
+        <pre class="bloque-codigo">git add -A && git commit -m "Módulo 1: proyectos"</pre>
+        <div class="checkpoint"><b>✓ Checkpoint 1:</b> proyectos funcionando + specs actualizadas + commit hecho. Limpia el contexto (<code>/clear</code>) antes del módulo 2.</div>
+      </article>
 
-                <!-- ============ MÓDULO 2 ============ -->
+      <!-- ============ MÓDULO 2 ============ -->
 
-                <article class="step" data-grupo="Módulo 2 · Tareas" data-titulo="2.1 Proponer"
-                    data-print-titulo="Módulo 2 — Paso 2.1: Proponer">
-                    <p><strong>Objetivo del módulo:</strong> cada proyecto tiene tareas, y cada tarea un estado:
-                        <em>pendiente → en curso → hecha</em>. Aquí verás la ventaja de OpenSpec en modo
-                        <em>brownfield</em>: la IA lee las specs del módulo 1 y construye <em>sobre</em> lo existente
-                        sin romperlo.</p>
-                    <div class="prompt">
-                        <div class="prompt-head">Copia y pega en Claude Code</div>
-                        <div class="prompt-body">/opsx:propose tareas-con-estado
+      <article class="step" data-grupo="Módulo 2 · Tareas" data-titulo="2.1 Proponer" data-print-titulo="Módulo 2 — Paso 2.1: Proponer">
+        <p><strong>Objetivo del módulo:</strong> cada proyecto tiene tareas, y cada tarea un estado: <em>pendiente → en curso → hecha</em>. Aquí verás la ventaja de OpenSpec en modo <em>brownfield</em>: la IA lee las specs del módulo 1 y construye <em>sobre</em> lo existente sin romperlo.</p>
+        <div class="prompt">
+          <div class="prompt-head">Copia y pega en Claude Code</div>
+          <pre class="prompt-body">/opsx:propose tareas-con-estado
 
-                            Agregar tareas a los proyectos existentes:
-                            - Una tarea pertenece a un proyecto y tiene: título (obligatorio) y estado.
-                            - Estados posibles: "pendiente", "en curso", "hecha". Nace en "pendiente".
-                            - Al seleccionar un proyecto en la barra lateral, veo sus tareas en el panel principal.
-                            - Puedo: crear tarea, cambiar su estado con un clic (cicla entre los 3), editar el título y
-                            eliminarla.
-                            - Filtro arriba del panel: Todas / Pendientes / En curso / Hechas.
-                            - Al eliminar un proyecto, se eliminan también sus tareas.</div>
-                    </div>
-                </article>
+Agregar tareas a los proyectos existentes:
+- Una tarea pertenece a un proyecto y tiene: título (obligatorio) y estado.
+- Estados posibles: "pendiente", "en curso", "hecha". Nace en "pendiente".
+- Al seleccionar un proyecto en la barra lateral, veo sus tareas en el panel principal.
+- Puedo: crear tarea, cambiar su estado con un clic (cicla entre los 3), editar el título y eliminarla.
+- Filtro arriba del panel: Todas / Pendientes / En curso / Hechas.
+- Al eliminar un proyecto, se eliminan también sus tareas.</pre>
+        </div>
+      </article>
 
-                <article class="step" data-grupo="Módulo 2 · Tareas" data-titulo="2.2 Leer el delta"
-                    data-print-titulo="Módulo 2 — Paso 2.2: Leer y corregir (el delta)">
-                    <p>Esta vez fíjate en algo nuevo: el <strong>delta</strong>. En <code>specs/</code>, OpenSpec marca
-                        qué requisitos se <em>agregan</em> y cuáles se <em>modifican</em> respecto al plano maestro.
-                        Busca:</p>
-                    <ul>
-                        <li>Que la eliminación de proyectos ahora incluya el borrado de sus tareas (esto
-                            <em>modifica</em> un requisito del módulo 1 — es normal y está bien que aparezca marcado).
-                        </li>
-                        <li>Que los 3 estados estén escritos exactamente como los pediste.</li>
-                        <li>Que exista el filtro con las 4 opciones.</li>
-                    </ul>
-                    <div class="alerta"><b>Si algo falta:</b> no lo dejes pasar "porque seguro la IA lo arregla
-                        después". Pídelo ahora, en el documento. Lo que no está en la spec, no existe.</div>
+      <article class="step" data-grupo="Módulo 2 · Tareas" data-titulo="2.2 Leer el delta" data-print-titulo="Módulo 2 — Paso 2.2: Leer y corregir (el delta)">
+        <p>Esta vez fíjate en algo nuevo: el <strong>delta</strong>. En <code>specs/</code>, OpenSpec marca qué requisitos se <em>agregan</em> y cuáles se <em>modifican</em> respecto al plano maestro. Busca:</p>
+        <ul>
+          <li>Que la eliminación de proyectos ahora incluya el borrado de sus tareas (esto <em>modifica</em> un requisito del módulo 1 — es normal y está bien que aparezca marcado).</li>
+          <li>Que los 3 estados estén escritos exactamente como los pediste.</li>
+          <li>Que exista el filtro con las 4 opciones.</li>
+        </ul>
+        <div class="alerta"><b>Si algo falta:</b> no lo dejes pasar "porque seguro la IA lo arregla después". Pídelo ahora, en el documento. Lo que no está en la spec, no existe.</div>
 
-                    <figure class="gif">
-                        <video src="assets/video-06-delta.mp4"
-                            title="Delta spec mostrando requisitos agregados y modificados" autoplay muted loop
-                            playsinline controls preload="metadata"
-                            onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
-                        <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo —
-                            disponible próximamente</div>
-                        <figcaption>El delta spec: qué requisitos se agregan y cuáles se modifican respecto al plano
-                            maestro.</figcaption>
-                    </figure>
-                </article>
+        <figure class="gif">
+          <video src="assets/video-06-delta.mp4" title="Delta spec mostrando requisitos agregados y modificados" autoplay muted loop playsinline controls preload="metadata" onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
+          <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo — disponible próximamente</div>
+          <figcaption>El delta spec: qué requisitos se agregan y cuáles se modifican respecto al plano maestro.</figcaption>
+        </figure>
+      </article>
 
-                <article class="step" data-grupo="Módulo 2 · Tareas" data-titulo="2.3 Construir y cerrar"
-                    data-print-titulo="Módulo 2 — Paso 2.3: Construir, probar, archivar">
-                    <p>Mismo ritmo que el módulo 1, ahora sin guía detallada:</p>
-                    <ol>
-                        <li><code>/opsx:apply tareas-con-estado</code></li>
-                        <li>Prueba: crea tareas en dos proyectos distintos, cicla estados, usa el filtro, elimina un
-                            proyecto y verifica que sus tareas desaparecen.</li>
-                        <li><code>/opsx:archive tareas-con-estado</code> y <code>git commit</code>.</li>
-                    </ol>
+      <article class="step" data-grupo="Módulo 2 · Tareas" data-titulo="2.3 Construir y cerrar" data-print-titulo="Módulo 2 — Paso 2.3: Construir, probar, archivar">
+        <p>Mismo ritmo que el módulo 1, ahora sin guía detallada:</p>
+        <ol>
+          <li><code>/opsx:apply tareas-con-estado</code></li>
+          <li>Prueba: crea tareas en dos proyectos distintos, cicla estados, usa el filtro, elimina un proyecto y verifica que sus tareas desaparecen.</li>
+          <li><code>/opsx:archive tareas-con-estado</code> y <code>git commit</code>.</li>
+        </ol>
 
-                    <figure class="gif">
-                        <video src="assets/video-07-demo-tareas.mp4" title="Demo de tareas con estados y filtro"
-                            autoplay muted loop playsinline controls preload="metadata"
-                            onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
-                        <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo —
-                            disponible próximamente</div>
-                        <figcaption>Tareas con estado: ciclar pendiente → en curso → hecha, y filtrar.</figcaption>
-                    </figure>
+        <figure class="gif">
+          <video src="assets/video-07-demo-tareas.mp4" title="Demo de tareas con estados y filtro" autoplay muted loop playsinline controls preload="metadata" onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
+          <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo — disponible próximamente</div>
+          <figcaption>Tareas con estado: ciclar pendiente → en curso → hecha, y filtrar.</figcaption>
+        </figure>
 
-                    <div class="checkpoint"><b>✓ Checkpoint 2:</b> tareas con estado + filtro funcionando, specs
-                        archivadas, commit hecho, contexto limpio.</div>
-                </article>
+        <div class="checkpoint"><b>✓ Checkpoint 2:</b> tareas con estado + filtro funcionando, specs archivadas, commit hecho, contexto limpio.</div>
+      </article>
 
-                <!-- ============ MÓDULO 3 ============ -->
+      <!-- ============ MÓDULO 3 ============ -->
 
-                <article class="step" data-grupo="Módulo 3 · Personas" data-titulo="3.1 Tu propio propose"
-                    data-print-titulo="Módulo 3 — Paso 3.1: Escribe tu propio propose">
-                    <p><strong>Objetivo del módulo:</strong> registrar personas y asignarlas a tareas. Este módulo es
-                        deliberadamente menos guiado: el prompt de propose lo escribes tú. Requisitos que debe cubrir tu
-                        propuesta:</p>
-                    <ul>
-                        <li>Una persona tiene nombre. Se pueden crear y listar (una pantalla o modal simple de
-                            "Equipo").</li>
-                        <li>Una tarea puede tener <strong>una</strong> persona asignada (o ninguna).</li>
-                        <li>En la lista de tareas se ven las iniciales de la persona asignada en un círculo.</li>
-                        <li>Nuevo filtro: ver solo las tareas de una persona.</li>
-                        <li>Si se elimina una persona, sus tareas quedan "sin asignar" (no se borran).</li>
-                    </ul>
-                    <div class="prompt">
-                        <div class="prompt-head">Plantilla — complétala con tus palabras</div>
-                        <div class="prompt-body">/opsx:propose personas-y-asignacion
+      <article class="step" data-grupo="Módulo 3 · Personas" data-titulo="3.1 Tu propio propose" data-print-titulo="Módulo 3 — Paso 3.1: Escribe tu propio propose">
+        <p><strong>Objetivo del módulo:</strong> registrar personas y asignarlas a tareas. Este módulo es deliberadamente menos guiado: el prompt de propose lo escribes tú. Requisitos que debe cubrir tu propuesta:</p>
+        <ul>
+          <li>Una persona tiene nombre. Se pueden crear y listar (una pantalla o modal simple de "Equipo").</li>
+          <li>Una tarea puede tener <strong>una</strong> persona asignada (o ninguna).</li>
+          <li>En la lista de tareas se ven las iniciales de la persona asignada en un círculo.</li>
+          <li>Nuevo filtro: ver solo las tareas de una persona.</li>
+          <li>Si se elimina una persona, sus tareas quedan "sin asignar" (no se borran).</li>
+        </ul>
+        <div class="prompt">
+          <div class="prompt-head">Plantilla — complétala con tus palabras</div>
+          <pre class="prompt-body">/opsx:propose personas-y-asignacion
 
-                            [Describe aquí los 5 requisitos de arriba con tus propias palabras.
-                            Sé concreto: qué datos tiene una persona, qué pasa al asignar,
-                            qué se ve en pantalla, y qué pasa al eliminar una persona.]</div>
-                    </div>
-                    <p>Antes de aprobar, usa la lista de requisitos como checklist contra <code>specs/</code>. El punto
-                        5 (eliminar persona sin borrar tareas) es el que la IA más tiende a resolver distinto a lo
-                        pedido: verifícalo con lupa.</p>
-                </article>
+[Describe aquí los 5 requisitos de arriba con tus propias palabras.
+Sé concreto: qué datos tiene una persona, qué pasa al asignar,
+qué se ve en pantalla, y qué pasa al eliminar una persona.]</pre>
+        </div>
+        <p>Antes de aprobar, usa la lista de requisitos como checklist contra <code>specs/</code>. El punto 5 (eliminar persona sin borrar tareas) es el que la IA más tiende a resolver distinto a lo pedido: verifícalo con lupa.</p>
+      </article>
 
-                <article class="step" data-grupo="Módulo 3 · Personas" data-titulo="3.2 Construir y cerrar"
-                    data-print-titulo="Módulo 3 — Paso 3.2: Construir, probar, archivar">
-                    <ol>
-                        <li><code>/opsx:apply personas-y-asignacion</code></li>
-                        <li>Prueba: crea 2 personas, asigna tareas, filtra por persona, elimina una persona y verifica
-                            que sus tareas quedan sin asignar.</li>
-                        <li><code>/opsx:archive personas-y-asignacion</code> y <code>git commit</code>.</li>
-                    </ol>
+      <article class="step" data-grupo="Módulo 3 · Personas" data-titulo="3.2 Construir y cerrar" data-print-titulo="Módulo 3 — Paso 3.2: Construir, probar, archivar">
+        <ol>
+          <li><code>/opsx:apply personas-y-asignacion</code></li>
+          <li>Prueba: crea 2 personas, asigna tareas, filtra por persona, elimina una persona y verifica que sus tareas quedan sin asignar.</li>
+          <li><code>/opsx:archive personas-y-asignacion</code> y <code>git commit</code>.</li>
+        </ol>
 
-                    <figure class="gif">
-                        <video src="assets/video-08-demo-personas.mp4" title="Demo de asignación de personas" autoplay
-                            muted loop playsinline controls preload="metadata"
-                            onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
-                        <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo —
-                            disponible próximamente</div>
-                        <figcaption>Personas: asignar a tareas, filtrar por persona y eliminar sin perder tareas.
-                        </figcaption>
-                    </figure>
+        <figure class="gif">
+          <video src="assets/video-08-demo-personas.mp4" title="Demo de asignación de personas" autoplay muted loop playsinline controls preload="metadata" onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
+          <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo — disponible próximamente</div>
+          <figcaption>Personas: asignar a tareas, filtrar por persona y eliminar sin perder tareas.</figcaption>
+        </figure>
 
-                    <div class="checkpoint"><b>✓ Checkpoint 3:</b> la app completa funciona y
-                        <code>openspec/specs/</code> describe fielmente todo lo construido. Ábrelo y léelo: ese
-                        documento <em>es</em> tu aplicación explicada en español.</div>
-                </article>
+        <div class="checkpoint"><b>✓ Checkpoint 3:</b> la app completa funciona y <code>openspec/specs/</code> describe fielmente todo lo construido. Ábrelo y léelo: ese documento <em>es</em> tu aplicación explicada en español.</div>
+      </article>
 
-                <!-- ============ CIERRE ============ -->
+      <!-- ============ CIERRE ============ -->
 
-                <article class="step" data-grupo="Final" data-titulo="Cierre y reto final"
-                    data-print-titulo="Cierre y reto final">
-                    <p>Hiciste 3 ciclos completos. Fíjate en lo que <strong>no</strong> hiciste: nunca escribiste
-                        código, nunca perdiste el hilo en un chat infinito, y en cualquier momento puedes explicar qué
-                        hace la app leyendo <code>openspec/specs/</code>.</p>
-                    <h3>Reto final (sin guía)</h3>
-                    <p>Agrega por tu cuenta, con un ciclo completo de OpenSpec, <strong>una</strong> de estas funciones:
-                    </p>
-                    <ul>
-                        <li>Fecha límite en las tareas, con las vencidas resaltadas en rojo.</li>
-                        <li>Contador de tareas pendientes junto a cada proyecto en la barra lateral.</li>
-                        <li>Una tarea puede tener varias personas asignadas (¡ojo: esto <em>modifica</em> specs
-                            existentes!).</li>
-                    </ul>
-                    <p>Criterio de éxito: que otra persona pueda entender tu cambio leyendo solo la carpeta archivada,
-                        sin mirar el código.</p>
+      <article class="step" data-grupo="Final" data-titulo="Cierre y reto final" data-print-titulo="Cierre y reto final">
+        <p>Hiciste 3 ciclos completos. Fíjate en lo que <strong>no</strong> hiciste: nunca escribiste código, nunca perdiste el hilo en un chat infinito, y en cualquier momento puedes explicar qué hace la app leyendo <code>openspec/specs/</code>.</p>
+        <h3>Reto final (sin guía)</h3>
+        <p>Agrega por tu cuenta, con un ciclo completo de OpenSpec, <strong>una</strong> de estas funciones:</p>
+        <ul>
+          <li>Fecha límite en las tareas, con las vencidas resaltadas en rojo.</li>
+          <li>Contador de tareas pendientes junto a cada proyecto en la barra lateral.</li>
+          <li>Una tarea puede tener varias personas asignadas (¡ojo: esto <em>modifica</em> specs existentes!).</li>
+        </ul>
+        <p>Criterio de éxito: que otra persona pueda entender tu cambio leyendo solo la carpeta archivada, sin mirar el código.</p>
 
-                    <figure class="gif">
-                        <video src="assets/video-09-specs-finales.mp4" title="Recorrido por las specs finales" autoplay
-                            muted loop playsinline controls preload="metadata"
-                            onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
-                        <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo —
-                            disponible próximamente</div>
-                        <figcaption>El resultado final: la app terminada junto a su plano, lado a lado.</figcaption>
-                    </figure>
+        <figure class="gif">
+          <video src="assets/video-09-specs-finales.mp4" title="Recorrido por las specs finales" autoplay muted loop playsinline controls preload="metadata" onerror="this.classList.add('oculto');this.nextElementSibling.style.display='block'"></video>
+          <div class="placeholder" style="display:none"><span class="clap">🎬</span>Video demostrativo — disponible próximamente</div>
+          <figcaption>El resultado final: la app terminada junto a su plano, lado a lado.</figcaption>
+        </figure>
 
-                    <div class="regla">Lo que no está en la spec, <span>no existe.</span></div>
-                </article>
-
-            </div>
-
-            <div class="barra-inferior">
-                <button class="btn-nav anterior" id="btn-prev">← Anterior</button>
-                <span class="pista">También puedes usar las flechas ← → del teclado</span>
-                <button class="btn-nav siguiente" id="btn-next">Siguiente →</button>
-            </div>
-        </main>
+        <div class="regla">Lo que no está en la spec, <span>no existe.</span></div>
+      </article>
 
     </div>
 
-    <button class="btn-pdf" onclick="window.print()">Exportar a PDF ⤓</button>
+    <div class="barra-inferior">
+      <button class="btn-nav anterior" id="btn-prev">← Anterior</button>
+      <span class="pista">También puedes usar las flechas ← → del teclado</span>
+      <button class="btn-nav siguiente" id="btn-next">Siguiente →</button>
+    </div>
+  </main>
 
-    <script>
-        (function () {
-            const pasos = Array.from(document.querySelectorAll('article.step'));
-            const nav = document.getElementById('nav-pasos');
-            const tituloActual = document.getElementById('titulo-actual');
-            const contador = document.getElementById('contador');
-            const barra = document.getElementById('barra-progreso');
-            const labelProg = document.getElementById('label-progreso');
-            const btnPrev = document.getElementById('btn-prev');
-            const btnNext = document.getElementById('btn-next');
-            const contenido = document.getElementById('contenido');
-            const vistos = new Set();
-            let actual = 0;
+</div>
 
-            // Construir sidebar agrupado
-            let grupoPrevio = null;
-            pasos.forEach((p, i) => {
-                const grupo = p.dataset.grupo;
-                if (grupo !== grupoPrevio) {
-                    const g = document.createElement('div');
-                    g.className = 'grupo';
-                    g.textContent = grupo;
-                    nav.appendChild(g);
-                    grupoPrevio = grupo;
-                }
-                const btn = document.createElement('button');
-                btn.className = 'paso-link';
-                btn.innerHTML = '<span class="dot">' + (i + 1) + '</span><span class="etiqueta">' + p.dataset.titulo + '</span>';
-                btn.addEventListener('click', () => ir(i));
-                nav.appendChild(btn);
-            });
-            const links = Array.from(nav.querySelectorAll('.paso-link'));
+<button class="btn-pdf" onclick="window.print()">Exportar a PDF ⤓</button>
 
-            function ir(i) {
-                if (i < 0 || i >= pasos.length) return;
-                vistos.add(actual);
-                actual = i;
-                pasos.forEach((p, j) => p.classList.toggle('activo', j === i));
-                links.forEach((l, j) => {
-                    l.classList.toggle('activo', j === i);
-                    l.classList.toggle('visto', vistos.has(j) && j !== i);
-                    if (vistos.has(j) && j !== i) l.querySelector('.dot').textContent = '✓';
-                    else l.querySelector('.dot').textContent = j + 1;
-                });
-                tituloActual.textContent = pasos[i].dataset.titulo;
-                contador.textContent = 'PASO ' + (i + 1) + ' / ' + pasos.length;
-                const pct = Math.round(((i + 1) / pasos.length) * 100);
-                barra.style.width = pct + '%';
-                labelProg.textContent = pct + '% del tutorial';
-                btnPrev.disabled = i === 0;
-                btnNext.textContent = i === pasos.length - 1 ? 'Fin del tutorial ✓' : 'Siguiente →';
-                btnNext.disabled = i === pasos.length - 1;
-                contenido.scrollTop = 0;
-                if (history.replaceState) history.replaceState(null, '', '#paso-' + (i + 1));
-                // En móvil, centrar el link activo en la barra horizontal
-                links[i].scrollIntoView({ block: 'nearest', inline: 'center' });
-            }
+<script>
+(function(){
+  const pasos = Array.from(document.querySelectorAll('article.step'));
+  const nav = document.getElementById('nav-pasos');
+  const tituloActual = document.getElementById('titulo-actual');
+  const contador = document.getElementById('contador');
+  const barra = document.getElementById('barra-progreso');
+  const labelProg = document.getElementById('label-progreso');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+  const contenido = document.getElementById('contenido');
+  const vistos = new Set();
+  let actual = 0;
 
-            btnPrev.addEventListener('click', () => ir(actual - 1));
-            btnNext.addEventListener('click', () => ir(actual + 1));
-            document.addEventListener('keydown', (e) => {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-                if (e.key === 'ArrowRight') ir(actual + 1);
-                if (e.key === 'ArrowLeft') ir(actual - 1);
-            });
+  // Construir sidebar agrupado
+  let grupoPrevio = null;
+  pasos.forEach((p, i) => {
+    const grupo = p.dataset.grupo;
+    if (grupo !== grupoPrevio) {
+      const g = document.createElement('div');
+      g.className = 'grupo';
+      g.textContent = grupo;
+      nav.appendChild(g);
+      grupoPrevio = grupo;
+    }
+    const btn = document.createElement('button');
+    btn.className = 'paso-link';
+    btn.innerHTML = '<span class="dot">' + (i + 1) + '</span><span class="etiqueta">' + p.dataset.titulo + '</span>';
+    btn.addEventListener('click', () => ir(i));
+    nav.appendChild(btn);
+  });
+  const links = Array.from(nav.querySelectorAll('.paso-link'));
 
-            // Restaurar posición desde el hash de la URL (#paso-5)
-            const m = location.hash.match(/#paso-(\d+)/);
-            ir(m ? Math.min(pasos.length - 1, Math.max(0, parseInt(m[1], 10) - 1)) : 0);
-            vistos.delete(actual);
-        })();
-    </script>
+  function ir(i) {
+    if (i < 0 || i >= pasos.length) return;
+    vistos.add(actual);
+    actual = i;
+    pasos.forEach((p, j) => p.classList.toggle('activo', j === i));
+    links.forEach((l, j) => {
+      l.classList.toggle('activo', j === i);
+      l.classList.toggle('visto', vistos.has(j) && j !== i);
+      if (vistos.has(j) && j !== i) l.querySelector('.dot').textContent = '✓';
+      else l.querySelector('.dot').textContent = j + 1;
+    });
+    tituloActual.textContent = pasos[i].dataset.titulo;
+    contador.textContent = 'PASO ' + (i + 1) + ' / ' + pasos.length;
+    const pct = Math.round(((i + 1) / pasos.length) * 100);
+    barra.style.width = pct + '%';
+    labelProg.textContent = pct + '% del tutorial';
+    btnPrev.disabled = i === 0;
+    btnNext.textContent = i === pasos.length - 1 ? 'Fin del tutorial ✓' : 'Siguiente →';
+    btnNext.disabled = i === pasos.length - 1;
+    contenido.scrollTop = 0;
+    if (history.replaceState) history.replaceState(null, '', '#paso-' + (i + 1));
+    // En móvil, centrar el link activo en la barra horizontal
+    links[i].scrollIntoView({block: 'nearest', inline: 'center'});
+  }
+
+  btnPrev.addEventListener('click', () => ir(actual - 1));
+  btnNext.addEventListener('click', () => ir(actual + 1));
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowRight') ir(actual + 1);
+    if (e.key === 'ArrowLeft') ir(actual - 1);
+  });
+
+  // Restaurar posición desde el hash de la URL (#paso-5)
+  const m = location.hash.match(/#paso-(\d+)/);
+  ir(m ? Math.min(pasos.length - 1, Math.max(0, parseInt(m[1], 10) - 1)) : 0);
+  vistos.delete(actual);
+})();
+</script>
 
 </body>
-
 </html>
