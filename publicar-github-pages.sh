@@ -5,8 +5,10 @@
 # ejecutándolo desde la carpeta que contiene tutorial-openspec-todolist.html.
 #
 # Uso:
-#   bash publicar-github-pages.sh                     # con GitHub CLI (gh)
-#   bash publicar-github-pages.sh <url-repo-github>   # sin gh, repo ya creado
+#   bash publicar-github-pages.sh                              # con GitHub CLI (gh)
+#   bash publicar-github-pages.sh -m "Mi mensaje"              # mensaje de commit propio
+#   bash publicar-github-pages.sh <url-repo-github>            # sin gh, repo ya creado
+#   bash publicar-github-pages.sh -m "Mi mensaje" <url-repo>   # ambos, en cualquier orden
 #
 # Requiere: git. Recomendado: GitHub CLI (gh) autenticado (gh auth login).
 # Windows:  ejecutar en Git Bash o WSL.
@@ -16,7 +18,25 @@ set -euo pipefail
 TUTORIAL="tutorial-openspec-todolist.html"
 REPO_NOMBRE="${REPO_NOMBRE:-openspec-todolist-tutorial}"
 RAMA="main"
-REMOTO_ARG="${1:-}"
+
+# ---------- Argumentos ----------
+# -m/--mensaje "texto"  → mensaje de commit personalizado (opcional)
+# <url-repo-github>      → primer argumento posicional (modo sin gh)
+MENSAJE="Tutorial OpenSpec TodoList: publicación en GitHub Pages"
+REMOTO_ARG=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -m|--mensaje)
+      [ -n "${2:-}" ] || { echo "ERROR: -m/--mensaje requiere un texto entre comillas"; exit 1; }
+      MENSAJE="$2"; shift 2 ;;
+    -h|--help)
+      echo "Uso: bash publicar-github-pages.sh [-m \"mensaje de commit\"] [<url-repo-github>]"; exit 0 ;;
+    -*)
+      echo "ERROR: opción desconocida: $1"; exit 1 ;;
+    *)
+      REMOTO_ARG="$1"; shift ;;
+  esac
+done
 
 # ---------- Verificaciones ----------
 command -v git >/dev/null 2>&1 || { echo "ERROR: git no está instalado"; exit 1; }
@@ -54,7 +74,7 @@ git add -A
 if git diff --cached --quiet; then
   echo "==> Sin cambios nuevos que commitear"
 else
-  git commit -q -m "Tutorial OpenSpec TodoList: publicación en GitHub Pages"
+  git commit -q -m "$MENSAJE"
   echo "==> Commit creado"
 fi
 
