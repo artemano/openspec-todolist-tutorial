@@ -750,6 +750,17 @@ irm https://claude.ai/install.ps1 | iex</pre>
           <p>Para ello realize desde la terminal:</p>
           <pre class="bloque-codigo">git clone https://github.com/artemano/openspec-todolist-base.git</pre>
 
+          <h3>La constitución del proyecto: openspec/project.md</h3>
+          <p>Este archivo ya viene escrito en el repo base y es el más importante: OpenSpec lo inyecta en <em>todo</em>
+            lo que la IA genera, para que nunca "olvide" el stack. Contiene reglas como:</p>
+          <ul>
+            <li>Frontend: React + Vite, componentes simples, sin librerías de UI externas.</li>
+            <li>Backend: Bun con <code>bun:sqlite</code>. Un solo archivo de base de datos:
+              <code>server/db.sqlite</code>.</li>
+            <li>API: endpoints REST en JSON bajo <code>/api/*</code>.</li>
+            <li>Todo texto visible al usuario, en español.</li>
+          </ul>
+          
           <pre class="bloque-codigo">openspec-todolist-base>
 ├── <span class="k">app/</span>                  <span class="c"># Frontend React (Vite). Arranca con una pantalla vacía "TodoList".</span>
 ├── <span class="k">server/</span>               <span class="c"># API en Bun + bun:sqlite. Un endpoint /health de ejemplo.</span>
@@ -765,17 +776,6 @@ irm https://claude.ai/install.ps1 | iex</pre>
 │   ├── specs/            <span class="c"># El plano maestro. Empieza vacío; crece con cada módulo.</span>
 │   └── changes/          <span class="c"># Aquí aparecerán las propuestas del estudiante.</span>
 └── package.json</pre>
-
-          <h3>La constitución del proyecto: openspec/project.md</h3>
-          <p>Este archivo ya viene escrito en el repo base y es el más importante: OpenSpec lo inyecta en <em>todo</em>
-            lo que la IA genera, para que nunca "olvide" el stack. Contiene reglas como:</p>
-          <ul>
-            <li>Frontend: React + Vite, componentes simples, sin librerías de UI externas.</li>
-            <li>Backend: Bun con <code>bun:sqlite</code>. Un solo archivo de base de datos:
-              <code>server/db.sqlite</code>.</li>
-            <li>API: endpoints REST en JSON bajo <code>/api/*</code>.</li>
-            <li>Todo texto visible al usuario, en español.</li>
-          </ul>
 
           <h3>Puesta en marcha</h3>
           <pre class="bloque-codigo">git clone &lt;url-del-repo&gt; openspec-todolist
